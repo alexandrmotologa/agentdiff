@@ -1,0 +1,8 @@
+id: "task_02_python_data_pipeline"
+title: "Fix Null Pointer and Missing Key Exceptions in Transaction Pipeline"
+description: "The aggregate_transactions function in pipeline.py throws TypeError and KeyError when encountering None records or records missing the amount field. Add null safety checks to handle corrupt records gracefully."
+language: "python"
+target_files:
+  - "pipeline.py"
+test_command: "python -m unittest test_pipeline.py"
+timeout_seconds: 60

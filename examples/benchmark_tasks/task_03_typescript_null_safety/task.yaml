@@ -1,0 +1,8 @@
+id: "task_03_typescript_null_safety"
+title: "Fix Optional Chaining and Null Dereference in User Profile Evaluator"
+description: "The getUserAge function directly accesses user.profile.age, crashing with TypeError when profile is undefined or user is null. Add safe profile extraction."
+language: "typescript"
+target_files:
+  - "user.ts"
+test_command: "node --experimental-strip-types user.test.ts"
+timeout_seconds: 60

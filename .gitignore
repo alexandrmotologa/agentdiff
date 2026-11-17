@@ -1,8 +1,7 @@
 # Binaries
-bin/
-dist/
-agentdiff
-agentdiff.exe
+/bin/
+/agentdiff
+/agentdiff.exe
 
 # Go dependencies and test artifacts
 *.test

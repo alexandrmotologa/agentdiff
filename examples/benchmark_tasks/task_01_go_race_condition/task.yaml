@@ -1,0 +1,8 @@
+id: "task_01_go_race_condition"
+title: "Fix Concurrent Data Race in State Counter"
+description: "The Counter.Inc method is called concurrently by multiple goroutines without synchronization, leading to data races and incorrect final counts. Protect the counter using sync.Mutex."
+language: "go"
+target_files:
+  - "counter.go"
+test_command: "go test -race -v ./..."
+timeout_seconds: 60

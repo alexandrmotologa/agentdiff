@@ -1,0 +1,27 @@
+name: "Autonomous Agent Regression Suite"
+description: "Comparative benchmark across Go, Python, and TypeScript tasks evaluating tool bloat, surgical precision, and trajectory edit distance."
+
+candidate:
+  id: "candidate-v2"
+  provider: "mock"
+  model: "mock-v2-regressed"
+  max_turns: 20
+
+baseline:
+  id: "baseline-v1"
+  provider: "mock"
+  model: "mock-efficient"
+  max_turns: 20
+
+concurrency: 2
+default_timeout: 60
+tasks_dir: "examples/benchmark_tasks"
+
+gates:
+  max_tool_bloat_factor: 1.25
+  min_surgical_score: 0.40
+  max_surgical_score_drop: 0.15
+  max_latency_increase_ratio: 1.30
+  max_cosmetic_churn_ratio: 0.45
+  require_pass_rate_parity: true
+  fail_on_doom_loop: true
