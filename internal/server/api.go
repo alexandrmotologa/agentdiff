@@ -10,6 +10,7 @@ import (
 	"sync"
 
 	"github.com/alexandrmotologa/agentdiff/internal/config"
+	"github.com/alexandrmotologa/agentdiff/internal/metrics"
 	"github.com/alexandrmotologa/agentdiff/internal/runner"
 	"github.com/alexandrmotologa/agentdiff/internal/trajectory"
 )
@@ -41,6 +42,7 @@ func (s *Server) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/tasks", s.handleTasks)
 	mux.HandleFunc("/api/comparison", s.handleComparison)
 	mux.HandleFunc("/api/trajectory", s.handleTrajectory)
+	mux.HandleFunc("/api/leaderboard", s.handleLeaderboard)
 	mux.HandleFunc("/api/bench/run", s.handleRunBenchmark)
 	mux.HandleFunc("/api/bench/stream", s.Broker.HandleSSE)
 }
@@ -90,6 +92,19 @@ func (s *Server) handleTasks(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusOK, list)
+}
+
+func (s *Server) handleLeaderboard(w http.ResponseWriter, r *http.Request) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	results := make([]*trajectory.ComparisonResult, 0, len(s.benchmarks))
+	for _, comp := range s.benchmarks {
+		results = append(results, comp)
+	}
+
+	lb := metrics.GenerateLeaderboard(results)
+	writeJSON(w, http.StatusOK, lb)
 }
 
 func (s *Server) handleComparison(w http.ResponseWriter, r *http.Request) {

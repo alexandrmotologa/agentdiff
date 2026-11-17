@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Trajectory, FileMutation } from "../types";
-import { Code2, FileCode, Check, AlertCircle } from "lucide-react";
+import { Trajectory, FileMutation, ASTNodeRef } from "../types";
+import { Code2, FileCode, ChevronRight, Layers, Sparkles } from "lucide-react";
 
 interface AstDiffViewerProps {
   candidateTraj?: Trajectory;
@@ -12,6 +12,8 @@ export const AstDiffViewer: React.FC<AstDiffViewerProps> = ({
   baselineTraj,
 }) => {
   const [selectedAgent, setSelectedAgent] = useState<"candidate" | "baseline">("candidate");
+  const [activeFileIdx, setActiveFileIdx] = useState(0);
+  const [selectedNode, setSelectedNode] = useState<ASTNodeRef | null>(null);
 
   const currentTraj = selectedAgent === "candidate" ? candidateTraj : baselineTraj;
   const metrics = currentTraj?.ast_metrics;
@@ -26,7 +28,6 @@ export const AstDiffViewer: React.FC<AstDiffViewerProps> = ({
     }
   }
 
-  const [activeFileIdx, setActiveFileIdx] = useState(0);
   const activeMutation = mutations[activeFileIdx];
 
   return (
@@ -36,14 +37,14 @@ export const AstDiffViewer: React.FC<AstDiffViewerProps> = ({
         <div className="flex items-center gap-2.5">
           <Code2 className="w-4 h-4 text-teal-400" />
           <h3 className="text-sm font-bold uppercase tracking-wider text-slate-200">
-            AST Semantic Diff & Code Mutation Inspector
+            AST Semantic Diff & Syntax Hierarchy Inspector
           </h3>
         </div>
 
         {/* Candidate vs Baseline Tab */}
         <div className="flex items-center bg-background rounded-lg border border-surfaceBorder p-0.5 text-xs">
           <button
-            onClick={() => { setSelectedAgent("candidate"); setActiveFileIdx(0); }}
+            onClick={() => { setSelectedAgent("candidate"); setActiveFileIdx(0); setSelectedNode(null); }}
             className={`px-3 py-1 rounded font-semibold transition-all ${
               selectedAgent === "candidate"
                 ? "bg-sky-500 text-white shadow"
@@ -53,7 +54,7 @@ export const AstDiffViewer: React.FC<AstDiffViewerProps> = ({
             Candidate Edits
           </button>
           <button
-            onClick={() => { setSelectedAgent("baseline"); setActiveFileIdx(0); }}
+            onClick={() => { setSelectedAgent("baseline"); setActiveFileIdx(0); setSelectedNode(null); }}
             className={`px-3 py-1 rounded font-semibold transition-all ${
               selectedAgent === "baseline"
                 ? "bg-indigo-500 text-white shadow"
@@ -107,7 +108,7 @@ export const AstDiffViewer: React.FC<AstDiffViewerProps> = ({
             {mutations.map((m, idx) => (
               <button
                 key={idx}
-                onClick={() => setActiveFileIdx(idx)}
+                onClick={() => { setActiveFileIdx(idx); setSelectedNode(null); }}
                 className={`px-3 py-1.5 rounded-lg border text-xs font-mono flex items-center gap-2 transition-all ${
                   activeFileIdx === idx
                     ? "bg-slate-800 border-sky-500/50 text-white shadow-sm"
@@ -122,23 +123,64 @@ export const AstDiffViewer: React.FC<AstDiffViewerProps> = ({
             ))}
           </div>
 
+          {/* AST Hierarchy Breadcrumb */}
+          {activeMutation && (
+            <div className="bg-slate-900/60 border border-surfaceBorder rounded-lg p-2.5 flex items-center justify-between text-xs font-mono">
+              <div className="flex items-center gap-2 truncate text-slate-300">
+                <Layers className="w-3.5 h-3.5 text-teal-400 flex-shrink-0" />
+                <span>{activeMutation.path}</span>
+                {selectedNode && (
+                  <>
+                    <ChevronRight className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
+                    <span className="text-teal-300 font-semibold">{selectedNode.kind}</span>
+                    <ChevronRight className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
+                    <span className="text-sky-300 font-bold">{selectedNode.identifier}</span>
+                    <span className="text-slate-500 text-[10px]">
+                      (Lines {selectedNode.line_start}-{selectedNode.line_end})
+                    </span>
+                  </>
+                )}
+              </div>
+
+              {selectedNode && (
+                <button
+                  onClick={() => setSelectedNode(null)}
+                  className="text-[10px] text-slate-400 hover:text-white underline ml-2"
+                >
+                  Clear Filter
+                </button>
+              )}
+            </div>
+          )}
+
           {/* Diff Box */}
           {activeMutation && (
             <div className="bg-black/70 border border-surfaceBorder rounded-xl overflow-hidden font-mono text-xs shadow-inner">
-              {/* Diff Header */}
-              <div className="bg-slate-900/80 px-4 py-2.5 border-b border-surfaceBorder flex items-center justify-between">
+              {/* Diff Header & AST Node Chips */}
+              <div className="bg-slate-900/80 px-4 py-2.5 border-b border-surfaceBorder flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <span className="text-slate-300 font-semibold">{activeMutation.path}</span>
                 {activeMutation.ast_nodes_affected && activeMutation.ast_nodes_affected.length > 0 && (
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-[10px] text-slate-500 uppercase">AST Nodes:</span>
-                    {activeMutation.ast_nodes_affected.map((node, i) => (
-                      <span
-                        key={i}
-                        className="bg-teal-950/60 text-teal-300 border border-teal-800/60 px-2 py-0.5 rounded text-[10px]"
-                      >
-                        {node.kind}:{node.identifier}
-                      </span>
-                    ))}
+                    <span className="text-[10px] text-slate-500 uppercase flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 text-teal-400" />
+                      AST Nodes:
+                    </span>
+                    {activeMutation.ast_nodes_affected.map((node, i) => {
+                      const isNodeSelected = selectedNode?.identifier === node.identifier && selectedNode?.kind === node.kind;
+                      return (
+                        <button
+                          key={i}
+                          onClick={() => setSelectedNode(isNodeSelected ? null : node)}
+                          className={`px-2 py-0.5 rounded text-[10px] font-semibold border transition-all ${
+                            isNodeSelected
+                              ? "bg-teal-500 text-black border-teal-300 shadow-sm shadow-teal-500/30 scale-105"
+                              : "bg-teal-950/60 text-teal-300 hover:bg-teal-900/60 border-teal-800/60"
+                          }`}
+                        >
+                          {node.kind}:{node.identifier}
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </div>

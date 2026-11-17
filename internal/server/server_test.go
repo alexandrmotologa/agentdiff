@@ -30,3 +30,14 @@ func TestServerHealthAndStatic(t *testing.T) {
 		t.Fatalf("expected status 200 from SPA root, got %d", recSpa.Code)
 	}
 }
+
+func TestGenerateStandaloneHTML(t *testing.T) {
+	tmpDir := t.TempDir()
+	html, err := GenerateStandaloneHTML(tmpDir)
+	if err != nil {
+		t.Fatalf("GenerateStandaloneHTML failed: %v", err)
+	}
+	if len(html) == 0 {
+		t.Fatalf("expected non-empty html string")
+	}
+}

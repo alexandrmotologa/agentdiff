@@ -93,6 +93,26 @@ export interface AlignmentStep {
   baseline_turn?: number;
 }
 
+export interface CostProjection {
+  candidate_cost_usd: number;
+  baseline_cost_usd: number;
+  cost_delta_usd: number;
+  cost_ratio: number;
+  monthly_diff_at_1k_tasks: number;
+  monthly_diff_at_10k_tasks: number;
+  monthly_diff_at_50k_tasks: number;
+  cost_per_precision_point: number;
+}
+
+export interface DivergenceDiagnosis {
+  divergence_turn: number;
+  category: string;
+  summary: string;
+  candidate_action: string;
+  baseline_action: string;
+  recommended_steering: string;
+}
+
 export interface ComparisonResult {
   task_id: string;
   candidate_model: string;
@@ -120,6 +140,8 @@ export interface ComparisonResult {
   alignment_steps: AlignmentStep[];
   candidate_anti_patterns: AntiPattern[];
   baseline_anti_patterns: AntiPattern[];
+  cost_projection?: CostProjection;
+  diagnosis?: DivergenceDiagnosis;
   regressions: string[];
   verdict: "PASS" | "REGRESSION" | "INCONCLUSIVE";
 }

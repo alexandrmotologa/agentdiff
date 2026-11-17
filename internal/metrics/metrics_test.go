@@ -112,6 +112,16 @@ func TestMetricsAntiPatternsAndComparison(t *testing.T) {
 		t.Errorf("expected detected regressions")
 	}
 
+	if comp.CostProjection == nil {
+		t.Errorf("expected non-nil CostProjection")
+	}
+	if comp.Diagnosis == nil {
+		t.Errorf("expected non-nil Diagnosis")
+	}
+	if comp.Diagnosis.DivergenceTurn <= 0 {
+		t.Errorf("expected valid divergence turn > 0, got %d", comp.Diagnosis.DivergenceTurn)
+	}
+
 	terminalRep := FormatTerminalReport(comp)
 	if terminalRep == "" {
 		t.Errorf("expected non-empty terminal report")

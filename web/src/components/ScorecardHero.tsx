@@ -9,7 +9,10 @@ import {
   GitFork, 
   Flame, 
   CheckCircle2, 
-  XCircle 
+  XCircle,
+  Coins,
+  Compass,
+  Lightbulb
 } from "lucide-react";
 
 interface ScorecardHeroProps {
@@ -23,6 +26,9 @@ export const ScorecardHero: React.FC<ScorecardHeroProps> = ({ comparison }) => {
   const bloatPct = Math.round((comparison.tool_bloat_factor - 1) * 100);
   const candSec = (comparison.candidate_duration_ms / 1000).toFixed(1);
   const baseSec = (comparison.baseline_duration_ms / 1000).toFixed(1);
+
+  const cost = comparison.cost_projection;
+  const diag = comparison.diagnosis;
 
   return (
     <div className="bg-surface border border-surfaceBorder rounded-xl p-6 shadow-2xl space-y-6">
@@ -69,6 +75,25 @@ export const ScorecardHero: React.FC<ScorecardHeroProps> = ({ comparison }) => {
           </div>
         )}
       </div>
+
+      {/* Root-Cause Diagnosis & Steering Banner */}
+      {diag && diag.divergence_turn > 0 && (
+        <div className="bg-amber-950/25 border border-amber-500/30 rounded-lg p-4 space-y-2">
+          <div className="flex items-center gap-2 text-amber-400 font-semibold text-xs tracking-wide">
+            <Compass className="w-4 h-4 text-amber-400 flex-shrink-0" />
+            <span>Divergence Root Cause (Turn {diag.divergence_turn} • {diag.category.replace(/_/g, " ")})</span>
+          </div>
+          <p className="text-slate-200 text-xs leading-relaxed pl-6">
+            {diag.summary}
+          </p>
+          {diag.recommended_steering && (
+            <div className="mt-2 pl-6 pt-2 border-t border-amber-500/20 text-xs flex items-start gap-2 text-amber-200/90 font-mono">
+              <Lightbulb className="w-3.5 h-3.5 text-amber-300 mt-0.5 flex-shrink-0" />
+              <span><strong>Prompt Steering:</strong> {diag.recommended_steering}</span>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Grid of Key Diagnostic Metrics */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -158,18 +183,18 @@ export const ScorecardHero: React.FC<ScorecardHeroProps> = ({ comparison }) => {
           </div>
         </div>
 
-        {/* Metric 6: Divergence Turn */}
+        {/* Metric 6: Token Economics & Scale Impact */}
         <div className="bg-background/60 border border-surfaceBorder rounded-lg p-3.5 flex flex-col justify-between">
           <div className="text-[11px] font-medium text-slate-400 flex items-center justify-between">
-            <span>Divergence Turn</span>
-            <Flame className="w-3.5 h-3.5 text-amber-400" />
+            <span>Token Economics</span>
+            <Coins className="w-3.5 h-3.5 text-amber-400" />
           </div>
           <div className="mt-2">
-            <div className="text-base font-bold text-amber-300">
-              {comparison.divergence_turn > 0 ? `Turn ${comparison.divergence_turn}` : "Aligned"}
+            <div className="text-base font-bold text-white">
+              {cost ? `$${cost.candidate_cost_usd.toFixed(4)}` : "$0.00"}
             </div>
-            <div className="text-[10px] text-slate-400 mt-0.5">
-              Path separation point
+            <div className="text-[10px] text-slate-400 mt-0.5 font-mono">
+              {cost ? `10k: ${cost.monthly_diff_at_10k_tasks >= 0 ? "+" : ""}$${cost.monthly_diff_at_10k_tasks.toFixed(1)}/mo` : "Local/Zero"}
             </div>
           </div>
         </div>

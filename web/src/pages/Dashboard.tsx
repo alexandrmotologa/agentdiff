@@ -6,14 +6,15 @@ import { SynchronizedPlayer } from "../components/SynchronizedPlayer";
 import { AstDiffViewer } from "../components/AstDiffViewer";
 import { ToolCallFlamegraph } from "../components/ToolCallFlamegraph";
 import { AntiPatternAlerts } from "../components/AntiPatternAlerts";
+import { LeaderboardMatrix } from "../components/LeaderboardMatrix";
 import { 
-  Activity, 
   GitCompare, 
   Layers, 
   Code2, 
   Clock, 
   AlertTriangle,
-  RefreshCw
+  RefreshCw,
+  Trophy
 } from "lucide-react";
 
 export const Dashboard: React.FC = () => {
@@ -23,13 +24,24 @@ export const Dashboard: React.FC = () => {
   const [candidateTraj, setCandidateTraj] = useState<Trajectory | undefined>(undefined);
   const [baselineTraj, setBaselineTraj] = useState<Trajectory | undefined>(undefined);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"player" | "ast" | "timeline" | "antipatterns">("player");
+  const [activeTab, setActiveTab] = useState<"player" | "ast" | "timeline" | "antipatterns" | "leaderboard">("player");
   const [isRunningBenchmark, setIsRunningBenchmark] = useState(false);
   const [liveLog, setLiveLog] = useState<string>("");
 
   // 1. Fetch task list on load
   const fetchTasks = async () => {
     try {
+      if ((window as any).__AGENTDIFF_DATA__) {
+        const preloaded = (window as any).__AGENTDIFF_DATA__;
+        const taskList = preloaded.tasks || [];
+        setTasks(taskList);
+        if (taskList.length > 0 && !selectedTaskId) {
+          setSelectedTaskId(taskList[0].task_id);
+        }
+        setLoading(false);
+        return;
+      }
+
       const res = await fetch("/api/tasks");
       if (res.ok) {
         const data: TaskListItem[] = await res.json();
@@ -55,6 +67,18 @@ export const Dashboard: React.FC = () => {
 
     const loadTaskData = async () => {
       try {
+        if ((window as any).__AGENTDIFF_DATA__) {
+          const preloaded = (window as any).__AGENTDIFF_DATA__;
+          if (preloaded.comparisons && preloaded.comparisons[selectedTaskId]) {
+            setComparison(preloaded.comparisons[selectedTaskId]);
+          }
+          if (preloaded.trajectories && preloaded.trajectories[selectedTaskId]) {
+            setCandidateTraj(preloaded.trajectories[selectedTaskId].candidate);
+            setBaselineTraj(preloaded.trajectories[selectedTaskId].baseline);
+          }
+          return;
+        }
+
         const compRes = await fetch(`/api/comparison?task_id=${selectedTaskId}`);
         if (compRes.ok) {
           const compData: ComparisonResult = await compRes.json();
@@ -82,6 +106,10 @@ export const Dashboard: React.FC = () => {
 
   // 3. Connect to SSE Stream
   useEffect(() => {
+    if ((window as any).__AGENTDIFF_DATA__) {
+      // Offline standalone report mode: skip SSE
+      return;
+    }
     const sse = new EventSource("/api/bench/stream");
 
     sse.addEventListener("connected", () => {
@@ -241,6 +269,17 @@ export const Dashboard: React.FC = () => {
                     <span className="w-2 h-2 rounded-full bg-rose-400"></span>
                   )}
                 </button>
+                <button
+                  onClick={() => setActiveTab("leaderboard")}
+                  className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                    activeTab === "leaderboard"
+                      ? "bg-amber-500 text-black shadow-md shadow-amber-500/20 font-bold"
+                      : "text-slate-400 hover:text-slate-200"
+                  }`}
+                >
+                  <Trophy className="w-3.5 h-3.5" />
+                  Leaderboard
+                </button>
               </div>
 
               {/* View Components */}
@@ -271,6 +310,10 @@ export const Dashboard: React.FC = () => {
                   candidatePatterns={comparison.candidate_anti_patterns}
                   baselinePatterns={comparison.baseline_anti_patterns}
                 />
+              )}
+
+              {activeTab === "leaderboard" && (
+                <LeaderboardMatrix />
               )}
             </>
           )}

@@ -129,34 +129,58 @@ type AlignmentStep struct {
 	BaselineTurn   int         `json:"baseline_turn,omitempty"`
 }
 
+// CostProjection estimates token expenditure and monthly scaling impacts.
+type CostProjection struct {
+	CandidateCostUSD       float64 `json:"candidate_cost_usd"`
+	BaselineCostUSD        float64 `json:"baseline_cost_usd"`
+	CostDeltaUSD           float64 `json:"cost_delta_usd"`
+	CostRatio              float64 `json:"cost_ratio"`
+	MonthlyDiffAt1kTasks   float64 `json:"monthly_diff_at_1k_tasks"`
+	MonthlyDiffAt10kTasks  float64 `json:"monthly_diff_at_10k_tasks"`
+	MonthlyDiffAt50kTasks  float64 `json:"monthly_diff_at_50k_tasks"`
+	CostPerPrecisionPoint  float64 `json:"cost_per_precision_point"`
+}
+
+// DivergenceDiagnosis details the root cause of trajectory separation.
+type DivergenceDiagnosis struct {
+	DivergenceTurn      int    `json:"divergence_turn"`
+	Category            string `json:"category"`
+	Summary             string `json:"summary"`
+	CandidateAction     string `json:"candidate_action"`
+	BaselineAction      string `json:"baseline_action"`
+	RecommendedSteering string `json:"recommended_steering"`
+}
+
 // ComparisonResult stores the comparative analysis between candidate and baseline.
 type ComparisonResult struct {
-	TaskID                       string          `json:"task_id"`
-	CandidateModel               string          `json:"candidate_model"`
-	BaselineModel                string          `json:"baseline_model"`
-	CandidateStatus              string          `json:"candidate_status"`
-	BaselineStatus               string          `json:"baseline_status"`
-	CandidateVerified            bool            `json:"candidate_verified"`
-	BaselineVerified             bool            `json:"baseline_verified"`
-	CandidateDurationMs          int64           `json:"candidate_duration_ms"`
-	BaselineDurationMs           int64           `json:"baseline_duration_ms"`
-	DurationDeltaMs              int64           `json:"duration_delta_ms"`
-	SpeedupFactor                float64         `json:"speedup_factor"`
-	CandidateToolCount           int             `json:"candidate_tool_count"`
-	BaselineToolCount            int             `json:"baseline_tool_count"`
-	ToolBloatFactor              float64         `json:"tool_bloat_factor"`
-	ToolEfficiencyCandidate      float64         `json:"tool_efficiency_candidate"`
-	ToolEfficiencyBaseline       float64         `json:"tool_efficiency_baseline"`
-	ToolEfficiencyDelta          float64         `json:"tool_efficiency_delta"`
-	CandidateSurgicalScore       float64         `json:"candidate_surgical_score"`
-	BaselineSurgicalScore        float64         `json:"baseline_surgical_score"`
-	SurgicalScoreDelta           float64         `json:"surgical_score_delta"`
-	TrajectoryEditDistance       int             `json:"trajectory_edit_distance"`
-	NormalizedTrajectoryDistance float64         `json:"normalized_trajectory_distance"`
-	DivergenceTurn               int             `json:"divergence_turn"`
-	AlignmentSteps               []AlignmentStep `json:"alignment_steps"`
-	CandidateAntiPatterns        []AntiPattern   `json:"candidate_anti_patterns"`
-	BaselineAntiPatterns         []AntiPattern   `json:"baseline_anti_patterns"`
-	Regressions                  []string        `json:"regressions"`
-	Verdict                      string          `json:"verdict"` // "PASS", "REGRESSION", "INCONCLUSIVE"
+	TaskID                       string               `json:"task_id"`
+	CandidateModel               string               `json:"candidate_model"`
+	BaselineModel                string               `json:"baseline_model"`
+	CandidateStatus              string               `json:"candidate_status"`
+	BaselineStatus               string               `json:"baseline_status"`
+	CandidateVerified            bool                 `json:"candidate_verified"`
+	BaselineVerified             bool                 `json:"baseline_verified"`
+	CandidateDurationMs          int64                `json:"candidate_duration_ms"`
+	BaselineDurationMs           int64                `json:"baseline_duration_ms"`
+	DurationDeltaMs              int64                `json:"duration_delta_ms"`
+	SpeedupFactor                float64              `json:"speedup_factor"`
+	CandidateToolCount           int                  `json:"candidate_tool_count"`
+	BaselineToolCount            int                  `json:"baseline_tool_count"`
+	ToolBloatFactor              float64              `json:"tool_bloat_factor"`
+	ToolEfficiencyCandidate      float64              `json:"tool_efficiency_candidate"`
+	ToolEfficiencyBaseline       float64              `json:"tool_efficiency_baseline"`
+	ToolEfficiencyDelta          float64              `json:"tool_efficiency_delta"`
+	CandidateSurgicalScore       float64              `json:"candidate_surgical_score"`
+	BaselineSurgicalScore        float64              `json:"baseline_surgical_score"`
+	SurgicalScoreDelta           float64              `json:"surgical_score_delta"`
+	TrajectoryEditDistance       int                  `json:"trajectory_edit_distance"`
+	NormalizedTrajectoryDistance float64              `json:"normalized_trajectory_distance"`
+	DivergenceTurn               int                  `json:"divergence_turn"`
+	AlignmentSteps               []AlignmentStep      `json:"alignment_steps"`
+	CandidateAntiPatterns        []AntiPattern        `json:"candidate_anti_patterns"`
+	BaselineAntiPatterns         []AntiPattern        `json:"baseline_anti_patterns"`
+	CostProjection               *CostProjection      `json:"cost_projection,omitempty"`
+	Diagnosis                    *DivergenceDiagnosis `json:"diagnosis,omitempty"`
+	Regressions                  []string             `json:"regressions"`
+	Verdict                      string               `json:"verdict"` // "PASS", "REGRESSION", "INCONCLUSIVE"
 }

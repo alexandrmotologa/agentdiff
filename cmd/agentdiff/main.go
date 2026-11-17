@@ -35,6 +35,8 @@ func main() {
 		runReplay(os.Args[2:])
 	case "studio":
 		runStudio(os.Args[2:])
+	case "export":
+		runExport(os.Args[2:])
 	case "eval":
 		runEval(os.Args[2:])
 	case "version", "--version", "-v":
@@ -58,6 +60,7 @@ Available Commands:
   compare    Compare two .trajectory.json traces directly and evaluate regressions
   replay     Play back an agent trajectory trace turn-by-turn in the terminal
   studio     Launch the embedded React 19 Trajectory Studio web workbench (HTTP :7676)
+  export     Generate a self-contained offline HTML interactive report with all traces
   eval       Evaluate a single trajectory against regression quality gates
   version    Show version and build information
 
@@ -187,6 +190,8 @@ func runReplay(args []string) {
 	fs := flag.NewFlagSet("replay", flag.ExitOnError)
 	tracePath := fs.String("trace", "", "Path to .trajectory.json trace file")
 	delayMs := fs.Int("delay", 500, "Millisecond delay between turn playback")
+	interactive := fs.Bool("interactive", false, "Interactive turn-by-turn stepping with keyboard")
+	fs.BoolVar(interactive, "i", false, "Shorthand for --interactive")
 	fs.Parse(args)
 
 	if *tracePath == "" {
@@ -198,6 +203,11 @@ func runReplay(args []string) {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error loading trajectory: %v\n", err)
 		os.Exit(2)
+	}
+
+	if *interactive {
+		runInteractiveReplay(traj)
+		return
 	}
 
 	fmt.Println("================================================================================")
@@ -272,6 +282,36 @@ func runStudio(args []string) {
 	if err := http.ListenAndServe(addr, mux); err != nil {
 		fmt.Fprintf(os.Stderr, "Server failed: %v\n", err)
 		os.Exit(1)
+	}
+}
+
+func runExport(args []string) {
+	fs := flag.NewFlagSet("export", flag.ExitOnError)
+	tracesDir := fs.String("traces-dir", "./eval_results", "Directory containing serialized benchmark traces")
+	outputPath := fs.String("output", "./eval_results/report.html", "Path to output standalone interactive HTML report")
+	openBrowser := fs.Bool("open", false, "Automatically open generated report in the default browser")
+	fs.Parse(args)
+
+	absTracesDir, err := filepath.Abs(*tracesDir)
+	if err != nil {
+		absTracesDir = *tracesDir
+	}
+
+	absOut, err := filepath.Abs(*outputPath)
+	if err != nil {
+		absOut = *outputPath
+	}
+
+	fmt.Printf("Generating self-contained HTML report from %q...\n", absTracesDir)
+	if err := server.ExportReportToFile(absTracesDir, absOut); err != nil {
+		fmt.Fprintf(os.Stderr, "Error exporting report: %v\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("Standalone interactive report exported to: %s\n", absOut)
+
+	if *openBrowser {
+		openURL(absOut)
 	}
 }
 

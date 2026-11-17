@@ -50,6 +50,21 @@ func FormatTerminalReport(comp *trajectory.ComparisonResult) string {
 	sb.WriteString(fmt.Sprintf(" Alignment    : Edit Dist: %d (Norm: %.2f) | Divergence Turn: %d\n",
 		comp.TrajectoryEditDistance, comp.NormalizedTrajectoryDistance, comp.DivergenceTurn))
 
+	// Cost & Scale
+	if comp.CostProjection != nil {
+		sb.WriteString(fmt.Sprintf(" Cost & Scale : Cand: $%.4f | Base: $%.4f (Delta: %s) | 10k/mo impact: %s\n",
+			comp.CostProjection.CandidateCostUSD, comp.CostProjection.BaselineCostUSD,
+			formatUSDDelta(comp.CostProjection.CostDeltaUSD), formatUSDShort(comp.CostProjection.MonthlyDiffAt10kTasks)))
+	}
+
+	// Diagnosis
+	if comp.Diagnosis != nil && comp.Diagnosis.DivergenceTurn > 0 {
+		sb.WriteString(fmt.Sprintf(" Diagnosis    : [%s] %s\n", comp.Diagnosis.Category, comp.Diagnosis.Summary))
+		if comp.Diagnosis.RecommendedSteering != "" {
+			sb.WriteString(fmt.Sprintf(" Steering Tip : %s\n", comp.Diagnosis.RecommendedSteering))
+		}
+	}
+
 	// Anti-Patterns
 	if len(comp.CandidateAntiPatterns) > 0 {
 		sb.WriteString(" Anti-Patterns: Candidate:\n")
@@ -126,8 +141,27 @@ func FormatMarkdownSummary(comp *trajectory.ComparisonResult) string {
 		comp.BaselineSurgicalScore, comp.CandidateSurgicalScore, comp.SurgicalScoreDelta, surgStatus))
 
 	// Trajectory Alignment
-	sb.WriteString(fmt.Sprintf("| Trajectory Edit Distance | - | %d | Norm: %.2f | Div Turn: %d |\n\n",
+	sb.WriteString(fmt.Sprintf("| Trajectory Edit Distance | - | %d | Norm: %.2f | Div Turn: %d |\n",
 		comp.TrajectoryEditDistance, comp.NormalizedTrajectoryDistance, comp.DivergenceTurn))
+
+	if comp.CostProjection != nil {
+		sb.WriteString(fmt.Sprintf("| Token Cost (USD) | $%.4f | $%.4f | %s (%.2fx) | 10k: %s |\n\n",
+			comp.CostProjection.BaselineCostUSD, comp.CostProjection.CandidateCostUSD,
+			formatUSDDelta(comp.CostProjection.CostDeltaUSD), comp.CostProjection.CostRatio,
+			formatUSDShort(comp.CostProjection.MonthlyDiffAt10kTasks)))
+	} else {
+		sb.WriteString("\n")
+	}
+
+	if comp.Diagnosis != nil && comp.Diagnosis.DivergenceTurn > 0 {
+		sb.WriteString(fmt.Sprintf("> [!WARNING] **Divergence Root Cause (Turn %d - %s)**: %s\n",
+			comp.Diagnosis.DivergenceTurn, comp.Diagnosis.Category, comp.Diagnosis.Summary))
+		if comp.Diagnosis.RecommendedSteering != "" {
+			sb.WriteString(fmt.Sprintf("> **Recommended Prompt Steering**: %s\n\n", comp.Diagnosis.RecommendedSteering))
+		} else {
+			sb.WriteString("\n")
+		}
+	}
 
 	sb.WriteString(fmt.Sprintf("**Verdict:** `%s`\n", comp.Verdict))
 	if len(comp.Regressions) > 0 {
@@ -215,4 +249,18 @@ func truncate(s string, maxLen int) string {
 		return s
 	}
 	return s[:maxLen-3] + "..."
+}
+
+func formatUSDDelta(v float64) string {
+	if v >= 0 {
+		return fmt.Sprintf("+$%.4f", v)
+	}
+	return fmt.Sprintf("-$%.4f", -v)
+}
+
+func formatUSDShort(v float64) string {
+	if v >= 0 {
+		return fmt.Sprintf("+$%.2f", v)
+	}
+	return fmt.Sprintf("-$%.2f", -v)
 }

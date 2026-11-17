@@ -113,6 +113,9 @@ func CompareTrajectories(candidate, baseline *trajectory.Trajectory, targetFiles
 		verdict = "INCONCLUSIVE"
 	}
 
+	costProj := CalculateCostProjection(candidate, baseline)
+	diag := DiagnoseDivergence(candidate, baseline, divTurn, steps)
+
 	return &trajectory.ComparisonResult{
 		TaskID:                       taskID,
 		CandidateModel:               candidate.Model,
@@ -140,6 +143,8 @@ func CompareTrajectories(candidate, baseline *trajectory.Trajectory, targetFiles
 		AlignmentSteps:               steps,
 		CandidateAntiPatterns:        candAntiPatterns,
 		BaselineAntiPatterns:         baseAntiPatterns,
+		CostProjection:               &costProj,
+		Diagnosis:                    &diag,
 		Regressions:                  regressions,
 		Verdict:                      verdict,
 	}
