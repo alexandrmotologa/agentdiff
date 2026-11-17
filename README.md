@@ -1,8 +1,63 @@
-# agentdiff
+<p align="center">
+  <img src="docs/images/logo.png?raw=true" alt="agentdiff Logo" width="130" style="border-radius: 24px;" />
+</p>
 
-Comparative benchmarking and trajectory regression platform for AI coding agents.
+<h1 align="center">agentdiff</h1>
+
+<p align="center">
+  <strong>Comparative Benchmarking & Trajectory Regression Platform for AI Coding Agents</strong>
+</p>
+
+<p align="center">
+  <a href="https://github.com/alexandrmotologa/agentdiff/actions"><img src="https://github.com/alexandrmotologa/agentdiff/workflows/CI/badge.svg" alt="CI Status" /></a>
+  <a href="https://github.com/alexandrmotologa/agentdiff/releases"><img src="https://img.shields.io/badge/version-1.0.0-blue.svg" alt="Version" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License" /></a>
+  <a href="https://golang.org"><img src="https://img.shields.io/badge/go-1.24+-00ADD8.svg" alt="Go Version" /></a>
+  <a href="https://react.dev"><img src="https://img.shields.io/badge/react-19.0-61DAFB.svg" alt="React 19" /></a>
+  <a href="#low-memory-footprint"><img src="https://img.shields.io/badge/ram-%3C20MB-success.svg" alt="RAM Usage" /></a>
+</p>
 
 agentdiff runs multi-step coding benchmarks across competing model versions or system prompt configurations in isolated Git worktrees. It serializes agent turns, tool invocations, shell outputs, and file diffs. It then calculates Trajectory Edit Distance and AST Surgical Precision to pinpoint where an updated model becomes slower, wasteful, or prone to cosmetic file churn.
+
+<p align="center">
+  <img src="docs/images/agentdiff_demo.gif?raw=true" alt="agentdiff Trajectory Studio Interactive Demo" width="100%" />
+</p>
+
+## Visual Studio & Interface
+
+The platform provides a synchronized web workbench built with Go and React 19, operating either as a live server (`agentdiff studio`) or as a self-contained offline HTML file (`agentdiff export`).
+
+### Synchronized Trajectory Player & Scorecard
+Real-time side-by-side turn playback with divergence detection, tool call flamegraphs, and automated prompt steering recommendations.
+
+<p align="center">
+  <img src="docs/images/agentdiff_studio_dashboard.png?raw=true" alt="agentdiff Desktop Studio Dashboard" width="100%" />
+</p>
+
+### Abstract Syntax Tree (AST) Semantic Diff Inspector
+Inspects semantic node modifications across Go, Python, and TypeScript, measuring surgical edit precision against line-level formatting churn.
+
+<p align="center">
+  <img src="docs/images/agentdiff_ast_diff.png?raw=true" alt="agentdiff AST Semantic Diff Inspector" width="100%" />
+</p>
+
+### Multi-Model Benchmark Leaderboard
+Evaluates competing models across multiple tasks, aggregating pass rates, mean surgical scores, anti-pattern frequencies, and projected costs per 1,000 tasks.
+
+<p align="center">
+  <img src="docs/images/agentdiff_leaderboard.png?raw=true" alt="agentdiff Multi-Model Matrix Leaderboard" width="100%" />
+</p>
+
+### Responsive Multi-Device Support
+The Trajectory Studio adapts seamlessly across screen sizes, providing full inspection capabilities on desktop, tablet, and mobile displays.
+
+<p align="center">
+  <img src="docs/images/agentdiff_tablet_view.png?raw=true" alt="agentdiff Tablet Responsive View" width="48%" />
+  &nbsp;
+  <img src="docs/images/agentdiff_mobile_responsive.png?raw=true" alt="agentdiff Mobile Responsive View" width="48%" />
+</p>
+
+---
 
 ## Key Features
 

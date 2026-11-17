@@ -221,7 +221,7 @@ export const Dashboard: React.FC = () => {
               <ScorecardHero comparison={comparison} />
 
               {/* View Switcher Tabs */}
-              <div className="flex items-center gap-1 bg-surface p-1 rounded-xl border border-surfaceBorder w-fit">
+              <div className="flex items-center gap-1 bg-surface p-1 rounded-xl border border-surfaceBorder overflow-x-auto max-w-full scrollbar-none">
                 <button
                   onClick={() => setActiveTab("player")}
                   className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
