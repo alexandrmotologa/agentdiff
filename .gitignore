@@ -1,0 +1,28 @@
+# Binaries
+bin/
+dist/
+agentdiff
+agentdiff.exe
+
+# Go dependencies and test artifacts
+*.test
+*.out
+coverage.html
+vendor/
+
+# Node / Vite web assets
+web/node_modules/
+web/dist/
+.vite/
+
+# Temporary run artifacts & trajectories
+eval_results/
+tmp/
+*.worktree/
+
+# OS and IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
